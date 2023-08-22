@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import {OrbitControls} from 'copperore/orbitcontrols';
+import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
 import {CanvasIntermediateTexture} from 'copperore/canvas_intermediate_texture';
 import {SkinGridBox} from 'copperore/skin_grid';
 import {SkinMesh} from 'copperore/skin_mesh_creator';
