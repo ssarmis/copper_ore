@@ -1,4 +1,5 @@
 // Custom implementation of the GridHelper made for custom width and height/ divisions x and y
+import * as THREE from 'three';
 class SkinGrid extends THREE.LineSegments  {
     constructor(sw, sh, width, height, color1=0x444444){
         color1 = new THREE.Color( color1 );
@@ -96,3 +97,5 @@ class SkinGridBox {
         }
     }
 }
+
+export {SkinGrid, SkinGridBox};

@@ -22,7 +22,9 @@
 //    Zoom - middle mouse, or mousewheel / touch: two finger spread or squish
 //    Pan - right mouse, or arrow keys / touch: three finter swipe
 
-THREE.OrbitControls = function ( object, domElement ) {
+import * as THREE from 'three';
+
+function OrbitControls ( object, domElement ) {
 
 	this.object = object;
 
@@ -919,16 +921,16 @@ THREE.OrbitControls = function ( object, domElement ) {
 
 };
 
-THREE.OrbitControls.prototype = Object.create( THREE.EventDispatcher.prototype );
-THREE.OrbitControls.prototype.constructor = THREE.OrbitControls;
+OrbitControls.prototype = Object.create( THREE.EventDispatcher.prototype );
+OrbitControls.prototype.constructor = OrbitControls;
 
-Object.defineProperties( THREE.OrbitControls.prototype, {
+Object.defineProperties( OrbitControls.prototype, {
 
 	center: {
 
 		get: function () {
 
-			console.warn( 'THREE.OrbitControls: .center has been renamed to .target' );
+			console.warn( 'OrbitControls: .center has been renamed to .target' );
 			return this.target;
 
 		}
@@ -941,14 +943,14 @@ Object.defineProperties( THREE.OrbitControls.prototype, {
 
 		get: function () {
 
-			console.warn( 'THREE.OrbitControls: .noZoom has been deprecated. Use .enableZoom instead.' );
+			console.warn( 'OrbitControls: .noZoom has been deprecated. Use .enableZoom instead.' );
 			return ! this.enableZoom;
 
 		},
 
 		set: function ( value ) {
 
-			console.warn( 'THREE.OrbitControls: .noZoom has been deprecated. Use .enableZoom instead.' );
+			console.warn( 'OrbitControls: .noZoom has been deprecated. Use .enableZoom instead.' );
 			this.enableZoom = ! value;
 
 		}
@@ -959,14 +961,14 @@ Object.defineProperties( THREE.OrbitControls.prototype, {
 
 		get: function () {
 
-			console.warn( 'THREE.OrbitControls: .noRotate has been deprecated. Use .enableRotate instead.' );
+			console.warn( 'OrbitControls: .noRotate has been deprecated. Use .enableRotate instead.' );
 			return ! this.enableRotate;
 
 		},
 
 		set: function ( value ) {
 
-			console.warn( 'THREE.OrbitControls: .noRotate has been deprecated. Use .enableRotate instead.' );
+			console.warn( 'OrbitControls: .noRotate has been deprecated. Use .enableRotate instead.' );
 			this.enableRotate = ! value;
 
 		}
@@ -977,14 +979,14 @@ Object.defineProperties( THREE.OrbitControls.prototype, {
 
 		get: function () {
 
-			console.warn( 'THREE.OrbitControls: .noPan has been deprecated. Use .enablePan instead.' );
+			console.warn( 'OrbitControls: .noPan has been deprecated. Use .enablePan instead.' );
 			return ! this.enablePan;
 
 		},
 
 		set: function ( value ) {
 
-			console.warn( 'THREE.OrbitControls: .noPan has been deprecated. Use .enablePan instead.' );
+			console.warn( 'OrbitControls: .noPan has been deprecated. Use .enablePan instead.' );
 			this.enablePan = ! value;
 
 		}
@@ -995,14 +997,14 @@ Object.defineProperties( THREE.OrbitControls.prototype, {
 
 		get: function () {
 
-			console.warn( 'THREE.OrbitControls: .noKeys has been deprecated. Use .enableKeys instead.' );
+			console.warn( 'OrbitControls: .noKeys has been deprecated. Use .enableKeys instead.' );
 			return ! this.enableKeys;
 
 		},
 
 		set: function ( value ) {
 
-			console.warn( 'THREE.OrbitControls: .noKeys has been deprecated. Use .enableKeys instead.' );
+			console.warn( 'OrbitControls: .noKeys has been deprecated. Use .enableKeys instead.' );
 			this.enableKeys = ! value;
 
 		}
@@ -1013,14 +1015,14 @@ Object.defineProperties( THREE.OrbitControls.prototype, {
 
 		get: function () {
 
-			console.warn( 'THREE.OrbitControls: .staticMoving has been deprecated. Use .enableDamping instead.' );
+			console.warn( 'OrbitControls: .staticMoving has been deprecated. Use .enableDamping instead.' );
 			return ! this.enableDamping;
 
 		},
 
 		set: function ( value ) {
 
-			console.warn( 'THREE.OrbitControls: .staticMoving has been deprecated. Use .enableDamping instead.' );
+			console.warn( 'OrbitControls: .staticMoving has been deprecated. Use .enableDamping instead.' );
 			this.enableDamping = ! value;
 
 		}
@@ -1031,14 +1033,14 @@ Object.defineProperties( THREE.OrbitControls.prototype, {
 
 		get: function () {
 
-			console.warn( 'THREE.OrbitControls: .dynamicDampingFactor has been renamed. Use .dampingFactor instead.' );
+			console.warn( 'OrbitControls: .dynamicDampingFactor has been renamed. Use .dampingFactor instead.' );
 			return this.dampingFactor;
 
 		},
 
 		set: function ( value ) {
 
-			console.warn( 'THREE.OrbitControls: .dynamicDampingFactor has been renamed. Use .dampingFactor instead.' );
+			console.warn( 'OrbitControls: .dynamicDampingFactor has been renamed. Use .dampingFactor instead.' );
 			this.dampingFactor = value;
 
 		}
@@ -1046,3 +1048,5 @@ Object.defineProperties( THREE.OrbitControls.prototype, {
 	}
 
 } );
+
+export {OrbitControls};

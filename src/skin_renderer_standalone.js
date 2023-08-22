@@ -1,3 +1,6 @@
+import * as THREE from 'three';
+import {SkinMesh} from 'copperore/skin_mesh_creator';
+
 function SkinRendererStandalone(){
     var scene;
     var camera;
@@ -95,3 +98,5 @@ function SkinRendererStandalone(){
         Loop();
     }
 }
+
+export {SkinRendererStandalone};

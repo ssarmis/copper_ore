@@ -1,3 +1,5 @@
+import * as THREE from 'three';
+
 function SkinMesh(){
     const IMAGE_WIDTH = 64;
     const IMAGE_HEIGHT = 64;
@@ -455,3 +457,5 @@ function SkinMesh(){
         delete this.llOverlay;
     }
 }
+
+export {SkinMesh};

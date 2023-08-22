@@ -1,3 +1,10 @@
+import * as THREE from 'three';
+import {OrbitControls} from 'copperore/orbitcontrols';
+import {CanvasIntermidiateTexture} from 'copperore/canvas_intermidiate_texture';
+import {SkinGridBox} from 'copperore/skin_grid';
+import {SkinMesh} from 'copperore/skin_mesh_creator';
+import * as UI from 'copperore/ui';
+
 // todo fix bug with colorpicking on overlay meshes
 // todo fix mismatching back face for torso
 var uiColorSlotsWindow;
@@ -5,6 +12,7 @@ var uiDrawingToolsWindow;
 var uiColorSlot0;
 
 var scene;
+var gridScene;
 var camera;
 var uiScene;
 var uiCamera;
@@ -13,6 +21,7 @@ var controls;
 var renderer;
 var geometry;
 
+var currentIntersection;
 var currentSelectedColor;
 
 var skinMesh;
@@ -120,7 +129,7 @@ function MouseClicked(event){
 var alreadyDowned = false;
 
 function MouseDown(event) {
-    if(DRAGGABLE_OBJECT_CLICKED){
+    if(UI.DRAGGABLE_OBJECT_CLICKED){
         return;
     }
 
@@ -159,7 +168,7 @@ function KeyDown(event) {
 }
 
 function MouseMove(event) {
-    if(DRAGGABLE_OBJECT_CLICKED){
+    if(UI.DRAGGABLE_OBJECT_CLICKED){
         return;
     }
 
@@ -210,7 +219,7 @@ function RevertPreviousRevert(){ // ctrl + y oposite of undo
     dirtyTexture = true;
     AppendTextureToHistoryStack(currentSkinTexture);
 
-    var canvasTexture = new CanvasIntermidiateTexture(revertedTexture) // all of them have the same texture mapped
+    var canvasTexture = new CanvasIntermidiateTexture(revertedTexture, IMAGE_WIDTH, IMAGE_HEIGHT) // all of them have the same texture mapped
     currentSkinTexture = canvasTexture.FlushTexture();
 
     for (let bodyPart of Object.values(skinMesh.normalMeshes)) {
@@ -232,7 +241,7 @@ function RevertToPreviousTexture(){
 
     AppendTextureToRevertedStack(currentSkinTexture);
 
-    var canvasTexture = new CanvasIntermidiateTexture(previousTexture) // all of them have the same texture mapped
+    var canvasTexture = new CanvasIntermidiateTexture(previousTexture, IMAGE_WIDTH, IMAGE_HEIGHT) // all of them have the same texture mapped
     currentSkinTexture = canvasTexture.FlushTexture();
 
     for (let bodyPart of Object.values(skinMesh.normalMeshes)) {
@@ -266,7 +275,7 @@ function ToolAction(part){
     p.x = Math.floor(p.x);
     p.y = IMAGE_HEIGHT - Math.ceil(p.y);
     
-    var canvasTexture = new CanvasIntermidiateTexture(currentSkinTexture);
+    var canvasTexture = new CanvasIntermidiateTexture(currentSkinTexture, IMAGE_WIDTH, IMAGE_HEIGHT);
 
     switch(currentTool){
         case Tools.Brush:{
@@ -536,7 +545,7 @@ window.onload = (event) => {
     document.body.appendChild( renderer.domElement );
     ///
     camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.01, 1000 );
-    controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls = new OrbitControls(camera, renderer.domElement);
     // window.addEventListener( 'resize', onWindowResize );
     ///
     currentSkinTexture = new THREE.TextureLoader().load('assets/gigachad.png'); 
@@ -561,7 +570,7 @@ window.onload = (event) => {
 
     let buttons = {
         'clearSkinFullTransparent': () => {
-            let canvasTexture = new CanvasIntermidiateTexture(undefined, IMAGE_WIDTH, IMAGE_HEIGHT);
+            let canvasTexture = new CanvasIntermidiateTexture(undefined, IMAGE_WIDTH, IMAGE_HEIGHT, IMAGE_WIDTH, IMAGE_HEIGHT);
             canvasTexture.ClearPixelsAlpha(IMAGE_WIDTH, IMAGE_HEIGHT);
           
             dirtyTexture = true;
@@ -570,7 +579,7 @@ window.onload = (event) => {
             ChangeSkinFromTexture(canvasTexture.FlushTexture());
         },
         'clearSkin': () => {
-            let canvasTexture = new CanvasIntermidiateTexture(undefined, IMAGE_WIDTH, IMAGE_HEIGHT);
+            let canvasTexture = new CanvasIntermidiateTexture(undefined, IMAGE_WIDTH, IMAGE_HEIGHT, IMAGE_WIDTH, IMAGE_HEIGHT);
             canvasTexture.ClearPixels(IMAGE_WIDTH, IMAGE_HEIGHT, new THREE.Color(colors.clearColor[0] / 255, colors.clearColor[1] / 255, colors.clearColor[2] / 255));
             
             dirtyTexture = true;
@@ -666,14 +675,14 @@ window.onload = (event) => {
 
     uiScene = new THREE.Scene();
 
-    uiColorSlotsWindow = new UIWindow(new THREE.Vector2(300, 300), new THREE.Vector2(100, 100), "AAAAAAAAAA");
-    uiDrawingToolsWindow = new UIWindow(new THREE.Vector2(200, 300), new THREE.Vector2(32 + 32, 185));
+    uiColorSlotsWindow = new UI.Window(new THREE.Vector2(300, 300), new THREE.Vector2(100, 100), "AAAAAAAAAA");
+    uiDrawingToolsWindow = new UI.Window(new THREE.Vector2(200, 300), new THREE.Vector2(32 + 32, 185));
 
     uiScene.add(uiColorSlotsWindow.mesh);
     uiScene.add(uiColorSlotsWindow.dragBarMesh);
 
     for(let i = 0; i < 16; ++i){
-        let colorSlot = new UIEmptyButton(uiColorSlotsWindow, 
+        let colorSlot = new UI.EmptyButton(uiColorSlotsWindow, 
             new THREE.Vector2(4 + 16 + (i % 4) * (4 + 16), 4 + 16 + Math.floor(i/4) * (4 + 16)), new THREE.Vector2(16, 16), (button) => {
             SelectColorSlot(button);
         });
@@ -686,22 +695,22 @@ window.onload = (event) => {
 
     let toolIconSize = 32;
 
-    uiScene.add(new UIIconButton(uiDrawingToolsWindow, 
+    uiScene.add(new UI.IconButton(uiDrawingToolsWindow, 
         new THREE.Vector2(toolIconSize, toolIconSize), new THREE.Vector2(toolIconSize, toolIconSize), "assets/brushIcon.png", (button) => {
         SelectBrush();
     }).mesh);
 
-    uiScene.add(new UIIconButton(uiDrawingToolsWindow, 
+    uiScene.add(new UI.IconButton(uiDrawingToolsWindow, 
         new THREE.Vector2(toolIconSize, toolIconSize + toolIconSize + 8), new THREE.Vector2(toolIconSize, toolIconSize), "assets/bucketFillIcon.png", (button) => {
         SelectBucketFill();
     }).mesh);
 
-    uiScene.add(new UIIconButton(uiDrawingToolsWindow, 
+    uiScene.add(new UI.IconButton(uiDrawingToolsWindow, 
         new THREE.Vector2(toolIconSize, toolIconSize * 2 + toolIconSize + 8 * 2), new THREE.Vector2(toolIconSize, toolIconSize), "assets/colorPickIcon.png", (button) => {
         SelectColorPick();
     }).mesh);
 
-    uiScene.add(new UIIconButton(uiDrawingToolsWindow, 
+    uiScene.add(new UI.IconButton(uiDrawingToolsWindow, 
         new THREE.Vector2(toolIconSize, toolIconSize * 3 + toolIconSize + 8 * 3), new THREE.Vector2(toolIconSize, toolIconSize), "assets/eraserIcon.png", (button) => {
         SelectEraser();
     }).mesh);
@@ -718,3 +727,5 @@ window.onload = (event) => {
 
     Loop();
 }
+
+export {TogglePart, ToggleOverlayPart};

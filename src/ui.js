@@ -1,3 +1,5 @@
+import * as THREE from 'three';
+
 var DRAGGABLE_OBJECT_CLICKED = false;
 class AABB {
     Intersects = (point) => {
@@ -15,7 +17,7 @@ class AABB {
     }
 }
 
-class UIEmptyButton {
+class EmptyButton {
     MouseClicked = (event) => {
         var mousePoint = new THREE.Vector2(event.clientX, event.clientY);
         if(this.aabb.Intersects(mousePoint)){
@@ -55,7 +57,7 @@ class UIEmptyButton {
     }
 }
 
-class UIIconButton {
+class IconButton {
     MouseClicked = (event) => {
         var mousePoint = new THREE.Vector2(event.clientX, event.clientY);
         if(this.aabb.Intersects(mousePoint)){
@@ -100,7 +102,7 @@ class UIIconButton {
 }
 
 
-class UIWindow{
+class Window{
     MouseDown = (event) => {
         if(!this.alreadyDown){
             this.oldMousePosition = new THREE.Vector2(event.clientX, event.clientY);
@@ -185,3 +187,4 @@ class UIWindow{
     }
 }
 
+export {DRAGGABLE_OBJECT_CLICKED, EmptyButton, IconButton, Window};
