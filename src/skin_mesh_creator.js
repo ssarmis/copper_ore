@@ -97,7 +97,8 @@ function SkinMesh(){
     
         uvAttribute.needsUpdate = true;
     
-        const material = new THREE.MeshBasicMaterial({map:skin, alphaTest:1, side:THREE.DoubleSide});
+        const material = new THREE.MeshBasicMaterial({map:skin, side:THREE.DoubleSide});
+        material.transparent = true;
         return new THREE.Mesh( box, material );
     }
     
@@ -135,7 +136,8 @@ function SkinMesh(){
     
         uvAttribute.needsUpdate = true;
     
-        const material = new THREE.MeshBasicMaterial({map:skin, alphaTest:1, side:THREE.DoubleSide});
+        const material = new THREE.MeshBasicMaterial({map:skin, side:THREE.DoubleSide});
+        material.transparent = true;
         return new THREE.Mesh( box, material );
     }
     
@@ -173,7 +175,8 @@ function SkinMesh(){
     
         uvAttribute.needsUpdate = true;
     
-        const material = new THREE.MeshBasicMaterial({map:skin, alphaTest:1, side:THREE.DoubleSide});
+        const material = new THREE.MeshBasicMaterial({map:skin, side:THREE.DoubleSide});
+        material.transparent = true;
         return new THREE.Mesh( box, material );
     }
     
@@ -210,8 +213,9 @@ function SkinMesh(){
         SetFaceUVs(BOTTOM_FACE, SquareToUVs(8, 32 + 16, 4, 4), uvAttribute);
     
         uvAttribute.needsUpdate = true;
-    
-        const material = new THREE.MeshBasicMaterial({map:skin, alphaTest:1, side:THREE.DoubleSide});
+
+        const material = new THREE.MeshBasicMaterial({map:skin, side:THREE.DoubleSide});
+        material.transparent = true;
         return new THREE.Mesh( box, material );
     }
     
@@ -249,7 +253,8 @@ function SkinMesh(){
     
         uvAttribute.needsUpdate = true;
     
-        const material = new THREE.MeshBasicMaterial({map:skin, alphaTest:1, side:THREE.DoubleSide});
+        const material = new THREE.MeshBasicMaterial({map:skin, side:THREE.DoubleSide});
+        material.transparent = true;
         return new THREE.Mesh( box, material );
     }
     
@@ -287,7 +292,8 @@ function SkinMesh(){
     
         uvAttribute.needsUpdate = true;
     
-        const material = new THREE.MeshBasicMaterial({map:skin, alphaTest:1, side:THREE.DoubleSide});
+        const material = new THREE.MeshBasicMaterial({map:skin, side:THREE.DoubleSide});
+        material.transparent = true;
         return new THREE.Mesh( box, material );
     }
 
