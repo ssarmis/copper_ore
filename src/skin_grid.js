@@ -1,5 +1,8 @@
 // Custom implementation of the GridHelper made for custom width and height/ divisions x and y
 import * as THREE from 'three';
+
+const DEFAULT_GRID_COLOR = 0x7e7e7e
+
 class SkinGrid extends THREE.LineSegments  {
     constructor(sw, sh, width, height, color1=0x444444){
         color1 = new THREE.Color( color1 );
@@ -54,33 +57,33 @@ class SkinGridBox {
         this.grids = [];
         
         let epsilon = 0.01;
-        var gridHelper = new SkinGrid(boxSize.x, boxSize.y, width, height);
+        var gridHelper = new SkinGrid(boxSize.x, boxSize.y, width, height, DEFAULT_GRID_COLOR);
         gridHelper.rotation.x = THREE.MathUtils.degToRad(90);
         gridHelper.position.z += boxSize.z / 2 + epsilon;
         this.grids.push(gridHelper);
         // back
-        gridHelper = new SkinGrid(boxSize.x, boxSize.y, width, height);
+        gridHelper = new SkinGrid(boxSize.x, boxSize.y, width, height, DEFAULT_GRID_COLOR);
         gridHelper.rotation.x = THREE.MathUtils.degToRad(90);
         gridHelper.position.z -= boxSize.z / 2 + epsilon;
         this.grids.push(gridHelper);
         // left
-        gridHelper = new SkinGrid(boxSize.z, boxSize.y, width, height);
+        gridHelper = new SkinGrid(boxSize.z, boxSize.y, width, height, DEFAULT_GRID_COLOR);
         gridHelper.rotation.x = THREE.MathUtils.degToRad(90);
         gridHelper.rotation.z = THREE.MathUtils.degToRad(90);
         gridHelper.position.x -= boxSize.x / 2 + epsilon;
         this.grids.push(gridHelper);
         // right
-        gridHelper = new SkinGrid(boxSize.z, boxSize.y, width, height);
+        gridHelper = new SkinGrid(boxSize.z, boxSize.y, width, height, DEFAULT_GRID_COLOR);
         gridHelper.rotation.x = THREE.MathUtils.degToRad(90);
         gridHelper.rotation.z = THREE.MathUtils.degToRad(90);
         gridHelper.position.x += boxSize.x / 2 + epsilon;
         this.grids.push(gridHelper);
         // bottom
-        gridHelper = new SkinGrid(boxSize.x, boxSize.z, width, height);
+        gridHelper = new SkinGrid(boxSize.x, boxSize.z, width, height, DEFAULT_GRID_COLOR);
         gridHelper.position.y -= boxSize.y / 2 + epsilon;
         this.grids.push(gridHelper);
         // top
-        gridHelper = new SkinGrid(boxSize.x, boxSize.z, width, height);
+        gridHelper = new SkinGrid(boxSize.x, boxSize.z, width, height, DEFAULT_GRID_COLOR);
         gridHelper.position.y += boxSize.y / 2 + epsilon;
         this.grids.push(gridHelper);
     }

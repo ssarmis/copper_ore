@@ -23,6 +23,7 @@ var geometry;
 
 var currentIntersection;
 var currentSelectedColor;
+var currentBrushOpacity = 1;
 
 var skinMesh;
 var currentSkinTexture;
@@ -80,6 +81,10 @@ var colors = {
 var brushSize = {
     size: 1
 };
+
+var brushOpacity = {
+    opacity: 255
+}
 
 const Tools = {
     Brush: 1,
@@ -271,6 +276,7 @@ function FillColor(intermediateTexture, point, newColor){
 }
 
 function GetCurrentSlotColor(){
+    currentColorSlot.material.color.a ||= 255;
     return currentColorSlot.material.color;
 }
 
@@ -284,7 +290,6 @@ function ToolAction(part){
     switch(currentTool){
         case Tools.Brush:{
             let c = GetCurrentSlotColor();
-            c.a = 1;
             
             let arr = [c.r * 255, c.g * 255, c.b * 255, c.a * 255];
             ApplyBrush(canvasTexture, p, arr);
@@ -292,8 +297,7 @@ function ToolAction(part){
         }
         case Tools.BucketFill:{
             let c = GetCurrentSlotColor();
-            c.a = 1;
-            let arr = [c.a * 255, c.r * 255, c.g * 255, c.b * 255];
+            
             FillColor(canvasTexture, p, c);
             break;
         }
@@ -380,7 +384,7 @@ function Tick() {
                 if(intersects[currentIntersection].object.userData.bodyModel == true){
                     controls.enableRotate = false;
                     ToolAction(intersects[currentIntersection]);
-                } else {
+                } else if (controls.enableRotate) {
                     disableTools = true;
                 }
             }
@@ -476,6 +480,7 @@ function HideLoadingScreen(){
 
 function UpdateCurrentSlotColor(color){
     currentColorSlot.material.color = new THREE.Color(color[0] / 255, color[1] / 255, color[2] / 255);
+    currentColorSlot.material.color.a = (color[3] || 255) / 255
     currentColorSlot.material.needsUpdate = true;
 }
 
@@ -553,6 +558,7 @@ window.onload = (event) => {
     ///
     camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.01, 1000 );
     controls = new OrbitControls(camera, renderer.domElement);
+    controls.mouseButtons = { LEFT: THREE.MOUSE.ROTATE, MIDDLE: THREE.MOUSE.PAN, RIGHT: THREE.MOUSE.ROTATE};
     // window.addEventListener( 'resize', onWindowResize );
     ///
     currentSkinTexture = new THREE.TextureLoader().load('assets/gigachad.png'); 
@@ -627,6 +633,9 @@ window.onload = (event) => {
                         .then(texture => ChangeSkinFromTexture(texture));
                 });
             imageLoaded = true;
+        },
+        'resetView': ()=>{
+            controls.reset();
         }
     };
 
@@ -648,13 +657,19 @@ window.onload = (event) => {
     guiControls['normalGridToggle'] = editFolder.add(settings, 'grid', false).name("Grid");
     guiControls['brushColor'] = editFolder.addColor(colors, 'brushColor').name("Brush Color").onChange(() => {
         UpdateCurrentSlotColor(colors.brushColor);
+        currentColorSlot.material.color.a = currentBrushOpacity;
     });
-
+    guiControls['brushOpacity'] = editFolder.add(brushOpacity, 'opacity', 0, 255, 1).name("Brush Opacity").onChange(() => {
+        currentBrushOpacity = (brushOpacity.opacity / 255);
+        currentColorSlot.material.color.a = currentBrushOpacity;
+    });
+    
     guiControls['clearSkinColor'] = editFolder.add(buttons, 'clearSkin').name("Clear Skin with Color");
     guiControls['clearColor'] = editFolder.addColor(colors, 'clearColor').name("Clear Color").onChange(() => {
         buttons.clearSkin();
     });
     guiControls['clearSkinFullTransparent'] = editFolder.add(buttons, 'clearSkinFullTransparent').name("Clear Skin Full Transparant");
+    guiControls['resetView'] = editFolder.add(buttons, 'resetView').name("Reset View");
      
     const animationFolder = gui.addFolder("Animation");
     animationFolder.open();
@@ -727,10 +742,11 @@ window.onload = (event) => {
         CreateSkybox(1)
     ];
 
-    scene.add(skyboxes[1]);
+    scene.add(skyboxes[0]);
 
     loadingScreen = document.getElementsByClassName('loading')[0];
     HideLoadingScreen();
+    controls.saveState();
 
     Loop();
 }
