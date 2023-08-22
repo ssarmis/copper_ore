@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-class CanvasIntermidiateTexture {
+class CanvasIntermediateTexture {
     constructor(texture, imgWidth, imgHeight, width=0, height=0){
         // w and h are only read if the texture is undefined, meaning this canvas will be empty
         this.imgWidth = imgWidth;
@@ -95,4 +95,4 @@ class CanvasIntermidiateTexture {
     }
 }
 
-export {CanvasIntermidiateTexture};
+export {CanvasIntermediateTexture};

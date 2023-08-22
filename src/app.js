@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import {OrbitControls} from 'copperore/orbitcontrols';
-import {CanvasIntermidiateTexture} from 'copperore/canvas_intermidiate_texture';
+import {CanvasIntermediateTexture} from 'copperore/canvas_intermediate_texture';
 import {SkinGridBox} from 'copperore/skin_grid';
 import {SkinMesh} from 'copperore/skin_mesh_creator';
 import * as UI from 'copperore/ui';
@@ -219,7 +219,7 @@ function RevertPreviousRevert(){ // ctrl + y oposite of undo
     dirtyTexture = true;
     AppendTextureToHistoryStack(currentSkinTexture);
 
-    var canvasTexture = new CanvasIntermidiateTexture(revertedTexture, IMAGE_WIDTH, IMAGE_HEIGHT) // all of them have the same texture mapped
+    var canvasTexture = new CanvasIntermediateTexture(revertedTexture, IMAGE_WIDTH, IMAGE_HEIGHT) // all of them have the same texture mapped
     currentSkinTexture = canvasTexture.FlushTexture();
 
     for (let bodyPart of Object.values(skinMesh.normalMeshes)) {
@@ -241,7 +241,7 @@ function RevertToPreviousTexture(){
 
     AppendTextureToRevertedStack(currentSkinTexture);
 
-    var canvasTexture = new CanvasIntermidiateTexture(previousTexture, IMAGE_WIDTH, IMAGE_HEIGHT) // all of them have the same texture mapped
+    var canvasTexture = new CanvasIntermediateTexture(previousTexture, IMAGE_WIDTH, IMAGE_HEIGHT) // all of them have the same texture mapped
     currentSkinTexture = canvasTexture.FlushTexture();
 
     for (let bodyPart of Object.values(skinMesh.normalMeshes)) {
@@ -255,15 +255,15 @@ function RevertToPreviousTexture(){
     }
 }
 
-function ApplyBrush(intermidiateTexture, point, color){
-    intermidiateTexture.ChangePixelAtArray(point, color);
+function ApplyBrush(intermediateTexture, point, color){
+    intermediateTexture.ChangePixelAtArray(point, color);
 }
 
-function FillColor(intermidiateTexture, point, newColor){
-    intermidiateTexture.visitedTable = {}; // this should be in the intermidiate texture class
-    var originalPixel = intermidiateTexture.PixelAt(point);
-    intermidiateTexture.Fill(point, originalPixel, newColor);
-    intermidiateTexture.ChangePixelAt(point, newColor);
+function FillColor(intermediateTexture, point, newColor){
+    intermediateTexture.visitedTable = {}; // this should be in the intermediate texture class
+    var originalPixel = intermediateTexture.PixelAt(point);
+    intermediateTexture.Fill(point, originalPixel, newColor);
+    intermediateTexture.ChangePixelAt(point, newColor);
 }
 
 function GetCurrentSlotColor(){
@@ -275,7 +275,7 @@ function ToolAction(part){
     p.x = Math.floor(p.x);
     p.y = IMAGE_HEIGHT - Math.ceil(p.y);
     
-    var canvasTexture = new CanvasIntermidiateTexture(currentSkinTexture, IMAGE_WIDTH, IMAGE_HEIGHT);
+    var canvasTexture = new CanvasIntermediateTexture(currentSkinTexture, IMAGE_WIDTH, IMAGE_HEIGHT);
 
     switch(currentTool){
         case Tools.Brush:{
@@ -570,7 +570,7 @@ window.onload = (event) => {
 
     let buttons = {
         'clearSkinFullTransparent': () => {
-            let canvasTexture = new CanvasIntermidiateTexture(undefined, IMAGE_WIDTH, IMAGE_HEIGHT, IMAGE_WIDTH, IMAGE_HEIGHT);
+            let canvasTexture = new CanvasIntermediateTexture(undefined, IMAGE_WIDTH, IMAGE_HEIGHT, IMAGE_WIDTH, IMAGE_HEIGHT);
             canvasTexture.ClearPixelsAlpha(IMAGE_WIDTH, IMAGE_HEIGHT);
           
             dirtyTexture = true;
@@ -579,7 +579,7 @@ window.onload = (event) => {
             ChangeSkinFromTexture(canvasTexture.FlushTexture());
         },
         'clearSkin': () => {
-            let canvasTexture = new CanvasIntermidiateTexture(undefined, IMAGE_WIDTH, IMAGE_HEIGHT, IMAGE_WIDTH, IMAGE_HEIGHT);
+            let canvasTexture = new CanvasIntermediateTexture(undefined, IMAGE_WIDTH, IMAGE_HEIGHT, IMAGE_WIDTH, IMAGE_HEIGHT);
             canvasTexture.ClearPixels(IMAGE_WIDTH, IMAGE_HEIGHT, new THREE.Color(colors.clearColor[0] / 255, colors.clearColor[1] / 255, colors.clearColor[2] / 255));
             
             dirtyTexture = true;
