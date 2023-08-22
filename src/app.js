@@ -42,6 +42,8 @@ var then;
 
 var loadingScreen;
 
+var disableTools = false;
+
 const interval = 1000/100;
 
 const IMAGE_WIDTH = 64;
@@ -186,6 +188,8 @@ function MouseUp(event) {
         AppendTextureToHistoryStack(oldTexture);
         alreadyDowned = false;
         dirtyTexture = false;
+        disableTools = false;
+        controls.enableRotate = true;
     }
 }
 
@@ -372,9 +376,12 @@ function Tick() {
                     break;
                 }
             }
-            if(!bad) {                
+            if(!bad && !disableTools) {                
                 if(intersects[currentIntersection].object.userData.bodyModel == true){
+                    controls.enableRotate = false;
                     ToolAction(intersects[currentIntersection]);
+                } else {
+                    disableTools = true;
                 }
             }
         }
