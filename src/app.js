@@ -561,7 +561,7 @@ window.onload = (event) => {
     controls.mouseButtons = { LEFT: THREE.MOUSE.ROTATE, MIDDLE: THREE.MOUSE.PAN, RIGHT: THREE.MOUSE.ROTATE};
     // window.addEventListener( 'resize', onWindowResize );
     ///
-    currentSkinTexture = new THREE.TextureLoader().load('assets/gigachad.png'); 
+    currentSkinTexture = new THREE.TextureLoader().load('assets/mncs-mascot.png'); 
     currentSkinTexture.minFilter = THREE.NearestFilter;
     currentSkinTexture.magFilter = THREE.NearestFilter;
 
