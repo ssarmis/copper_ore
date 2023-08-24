@@ -4,7 +4,7 @@ import * as THREE from 'three';
 const DEFAULT_GRID_COLOR = 0x7e7e7e
 
 class SkinGrid extends THREE.LineSegments  {
-    constructor(sw, sh, width, height, color1=0x444444){
+    constructor(sw, sh, width, height, color1=DEFAULT_GRID_COLOR){
         color1 = new THREE.Color( color1 );
         
         const halfSizex = sw / 2;
@@ -55,43 +55,50 @@ class SkinGridBox {
     
     constructor(boxSize, width, height){
         this.grids = [];
+        this.visible = true;
         
         let epsilon = 0.01;
-        var gridHelper = new SkinGrid(boxSize.x, boxSize.y, width, height, DEFAULT_GRID_COLOR);
+        var gridHelper = new SkinGrid(boxSize.x, boxSize.y, width, height);
         gridHelper.rotation.x = THREE.MathUtils.degToRad(90);
         gridHelper.position.z += boxSize.z / 2 + epsilon;
         this.grids.push(gridHelper);
         // back
-        gridHelper = new SkinGrid(boxSize.x, boxSize.y, width, height, DEFAULT_GRID_COLOR);
+        gridHelper = new SkinGrid(boxSize.x, boxSize.y, width, height);
         gridHelper.rotation.x = THREE.MathUtils.degToRad(90);
         gridHelper.position.z -= boxSize.z / 2 + epsilon;
         this.grids.push(gridHelper);
         // left
-        gridHelper = new SkinGrid(boxSize.z, boxSize.y, width, height, DEFAULT_GRID_COLOR);
+        gridHelper = new SkinGrid(boxSize.z, boxSize.y, width, height);
         gridHelper.rotation.x = THREE.MathUtils.degToRad(90);
         gridHelper.rotation.z = THREE.MathUtils.degToRad(90);
         gridHelper.position.x -= boxSize.x / 2 + epsilon;
         this.grids.push(gridHelper);
         // right
-        gridHelper = new SkinGrid(boxSize.z, boxSize.y, width, height, DEFAULT_GRID_COLOR);
+        gridHelper = new SkinGrid(boxSize.z, boxSize.y, width, height);
         gridHelper.rotation.x = THREE.MathUtils.degToRad(90);
         gridHelper.rotation.z = THREE.MathUtils.degToRad(90);
         gridHelper.position.x += boxSize.x / 2 + epsilon;
         this.grids.push(gridHelper);
         // bottom
-        gridHelper = new SkinGrid(boxSize.x, boxSize.z, width, height, DEFAULT_GRID_COLOR);
+        gridHelper = new SkinGrid(boxSize.x, boxSize.z, width, width);
         gridHelper.position.y -= boxSize.y / 2 + epsilon;
         this.grids.push(gridHelper);
         // top
-        gridHelper = new SkinGrid(boxSize.x, boxSize.z, width, height, DEFAULT_GRID_COLOR);
+        gridHelper = new SkinGrid(boxSize.x, boxSize.z, width, width);
         gridHelper.position.y += boxSize.y / 2 + epsilon;
         this.grids.push(gridHelper);
     }
 
     Visible = (status) => {
+        this.visible = status;
         for(let i = 0; i < this.grids.length; ++i){
             this.grids[i].visible = status;
         }
+    }
+
+    toggleVisible = () => {
+        this.visible = !this.visible;
+        this.Visible(this.visible);
     }
 
     dispose(){

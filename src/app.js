@@ -135,6 +135,12 @@ function MouseClicked(event){
     } 
 }
 
+function SetGridVisibility(status) {
+    for (let gridPart of Object.values(grids)) {
+        gridPart.Visible(status);
+    }
+}
+
 var alreadyDowned = false;
 
 function MouseDown(event) {
@@ -392,10 +398,6 @@ function Tick() {
             }
         }
     }
-
-    for (let gridPart of Object.values(grids)) {
-        gridPart.Visible(settings.grid);
-    }
 }
 
 function Render() {
@@ -403,9 +405,10 @@ function Render() {
     renderer.render( scene, camera );
     
     renderer.autoClear = false;
-    renderer.render( gridScene, camera );
+    if (settings.grid) {
+        renderer.render( gridScene, camera );
+    }
     
-    renderer.autoClear = false;
     renderer.render( uiScene, uiCamera );
 }
 
@@ -457,10 +460,12 @@ function CreateAndAddToSceneGridForBodypart(bodypart, scene, width, height, boxS
 
 function TogglePart(part){
     skinMesh.normalMeshes[part].visible = !skinMesh.normalMeshes[part].visible;
+    grids[part].Visible(skinMesh.normalMeshes[part].visible);
 }
 
 function ToggleOverlayPart(part){
     skinMesh.overlayMeshes[part].visible = !skinMesh.overlayMeshes[part].visible;
+    grids[part].Visible(skinMesh.overlayMeshes[part].visible);
 }
 
 var currentColorSlot = undefined;
@@ -533,7 +538,7 @@ function CreateSkybox(index){
     return new THREE.Mesh(backgroundBox, backgroundMaterials);
 }    
 
-window.onload = (event) => {
+function Initialize() {
     window.addEventListener('click', MouseClicked);
     window.addEventListener('mousedown', MouseDown);
     window.addEventListener('mousemove', MouseMove);
@@ -656,7 +661,9 @@ window.onload = (event) => {
     const editFolder = gui.addFolder("Edit");
     editFolder.open();
     guiControls['brushSize'] = editFolder.add(brushSize, 'size', 0, 8, 1).name("Brush Size");
-    guiControls['normalGridToggle'] = editFolder.add(settings, 'grid', false).name("Grid");
+    guiControls['normalGridToggle'] = editFolder.add(settings, 'grid', false).name("Grid").onChange(() => {
+        // SetGridVisibility(settings.grid)
+    });
     guiControls['brushColor'] = editFolder.addColor(colors, 'brushColor').name("Brush Color").onChange(() => {
         UpdateCurrentSlotColor(colors.brushColor);
         currentColorSlot.material.color.a = currentBrushOpacity;
@@ -692,7 +699,16 @@ window.onload = (event) => {
     grids['rl'] = CreateAndAddToSceneGridForBodypart('rl', gridScene, 4, 12, new THREE.Vector3(0.5, 1.5, 0.5), skinOffsets);
     grids['ll'] = CreateAndAddToSceneGridForBodypart('ll', gridScene, 4, 12, new THREE.Vector3(0.5, 1.5, 0.5), skinOffsets);
 
-    grids['head'].visible = false;
+
+    const overlayScalar = 0.085;
+    grids['headOverlay'] = CreateAndAddToSceneGridForBodypart('headOverlay', gridScene, 8, 8, new THREE.Vector3(1.0, 1.0, 1.0).addScalar(overlayScalar), skinOffsets);
+    grids['torsoOverlay'] = CreateAndAddToSceneGridForBodypart('torsoOverlay', gridScene, 8, 12, new THREE.Vector3(1.0, 1.5, 0.5).addScalar(overlayScalar), skinOffsets);
+    grids['rhOverlay'] = CreateAndAddToSceneGridForBodypart('rhOverlay', gridScene, 4, 12, new THREE.Vector3(0.5, 1.5, 0.5).addScalar(overlayScalar), skinOffsets);
+    grids['lhOverlay'] = CreateAndAddToSceneGridForBodypart('lhOverlay', gridScene, 4, 12, new THREE.Vector3(0.5, 1.5, 0.5).addScalar(overlayScalar), skinOffsets);
+    grids['rlOverlay'] = CreateAndAddToSceneGridForBodypart('rlOverlay', gridScene, 4, 12, new THREE.Vector3(0.5, 1.5, 0.5).addScalar(overlayScalar), skinOffsets);
+    grids['llOverlay'] = CreateAndAddToSceneGridForBodypart('llOverlay', gridScene, 4, 12, new THREE.Vector3(0.5, 1.5, 0.5).addScalar(overlayScalar), skinOffsets);
+
+    SetGridVisibility(true)
 
     uiCamera = new THREE.OrthographicCamera(0, window.innerWidth, 0, window.innerHeight, 1, 1000);
     uiCamera.position.z = 1;
@@ -753,4 +769,4 @@ window.onload = (event) => {
     Loop();
 }
 
-export {TogglePart, ToggleOverlayPart};
+export {Initialize, TogglePart, ToggleOverlayPart};
