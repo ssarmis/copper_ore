@@ -1,9 +1,11 @@
 import * as THREE from 'three';
+import * as dat from "dat.gui";
+import * as UI from 'copperore/ui';
+
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
 import {CanvasIntermediateTexture} from 'copperore/canvas_intermediate_texture';
 import {SkinGridBox} from 'copperore/skin_grid';
 import {SkinMesh} from 'copperore/skin_mesh_creator';
-import * as UI from 'copperore/ui';
 
 // todo fix bug with colorpicking on overlay meshes
 // todo fix mismatching back face for torso
