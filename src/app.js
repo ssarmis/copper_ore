@@ -294,18 +294,20 @@ function ToolAction(part){
     p.y = IMAGE_HEIGHT - Math.ceil(p.y);
     
     var canvasTexture = new CanvasIntermediateTexture(currentSkinTexture, IMAGE_WIDTH, IMAGE_HEIGHT);
+    let c = {};
+    Object.assign(c, GetCurrentSlotColor())
+
+    if (!part.object.userData.isOverlay) {
+        c.a = 1;
+    }
 
     switch(currentTool){
         case Tools.Brush:{
-            let c = GetCurrentSlotColor();
-            
             let arr = [c.r * 255, c.g * 255, c.b * 255, c.a * 255];
             ApplyBrush(canvasTexture, p, arr);
             break;
         }
-        case Tools.BucketFill:{
-            let c = GetCurrentSlotColor();
-            
+        case Tools.BucketFill:{            
             FillColor(canvasTexture, p, c);
             break;
         }

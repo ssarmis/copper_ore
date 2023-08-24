@@ -303,39 +303,51 @@ function SkinMesh(){
     this.InitializeFullMesh = (texture) => {
         this.headOverlay = CreateHeadOverlayMesh(texture);
         this.headOverlay.userData.bodyModel = true;
+        this.headOverlay.userData.isOverlay = true;
     
         this.head = CreateHeadMesh(texture);
         this.head.userData.bodyModel = true;
+        this.head.userData.isOverlay = false;
     
         this.torso = CreateTorsoMesh(texture);
         this.torso.userData.bodyModel = true;
+        this.torso.userData.isOverlay = false;
     
         this.torsoOverlay = CreateTorsoOverlayMesh(texture);
         this.torsoOverlay.userData.bodyModel = true;
+        this.torsoOverlay.userData.isOverlay = true;
     
         this.rl = CreateRightLegMesh(texture);
         this.rl.userData.bodyModel = true;
+        this.rl.userData.isOverlay = false;
     
         this.rlOverlay = CreateRightLegOverlayMesh(texture);
         this.rlOverlay.userData.bodyModel = true;
+        this.rlOverlay.userData.isOverlay = true;
     
         this.ll = CreateLeftLegMesh(texture);
         this.ll.userData.bodyModel = true;
+        this.ll.userData.isOverlay = false;
     
         this.llOverlay = CreateLeftLegOverlayMesh(texture);
         this.llOverlay.userData.bodyModel = true;
+        this.llOverlay.userData.isOverlay = true;
     
         this.lh = CreateLeftHandMesh(texture);
         this.lh.userData.bodyModel = true;
+        this.lh.userData.isOverlay = false;
     
         this.lhOverlay = CreateLeftHandOverlayMesh(texture);
         this.lhOverlay.userData.bodyModel = true;
+        this.lhOverlay.userData.isOverlay = true;
     
         this.rh = CreateRightHandMesh(texture);
         this.rh.userData.bodyModel = true;
-    
+        this.rh.userData.isOverlay = false;
+
         this.rhOverlay = CreateRightHandOverlayMesh(texture);
         this.rhOverlay.userData.bodyModel = true;
+        this.rhOverlay.userData.isOverlay = true;
 
         this.overlayMeshes['headOverlay'] = this.headOverlay;
         this.overlayMeshes['torsoOverlay'] = this.torsoOverlay;
