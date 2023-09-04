@@ -1,6 +1,4 @@
 import * as THREE from 'three';
-
-var DRAGGABLE_OBJECT_CLICKED = false;
 class AABB {
     Intersects = (point) => {
         let x0 = this.position.x - (this.size.x / 2);
@@ -103,11 +101,12 @@ class IconButton {
 
 
 class Window{
+    DRAGGABLE_OBJECT_CLICKED = false;
     MouseDown = (event) => {
         if(!this.alreadyDown){
             this.oldMousePosition = new THREE.Vector2(event.clientX, event.clientY);
             if(this.dragBarAABB.Intersects(this.oldMousePosition)){
-                DRAGGABLE_OBJECT_CLICKED = true;
+                this.DRAGGABLE_OBJECT_CLICKED = true;
                 this.alreadyDown = true;
                 this.anchorPosition = this.position;
             }
@@ -129,7 +128,7 @@ class Window{
     MouseUp = (event) => {
         this.alreadyDown = false;
         this.startedDrag = false;
-        DRAGGABLE_OBJECT_CLICKED = false;
+        this.DRAGGABLE_OBJECT_CLICKED = false;
     }
 
     constructor(position, size, title=""){
@@ -187,4 +186,4 @@ class Window{
     }
 }
 
-export {DRAGGABLE_OBJECT_CLICKED, EmptyButton, IconButton, Window};
+export {EmptyButton, IconButton, Window};

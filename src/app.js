@@ -46,6 +46,7 @@ var then;
 var loadingScreen;
 
 var disableTools = false;
+var windowUIClicked = false;
 
 const interval = 1000/100;
 
@@ -144,7 +145,7 @@ function SetGridVisibility(status) {
 var alreadyDowned = false;
 
 function MouseDown(event) {
-    if(UI.DRAGGABLE_OBJECT_CLICKED){
+    if(windowUIClicked){
         return;
     }
 
@@ -183,7 +184,7 @@ function KeyDown(event) {
 }
 
 function MouseMove(event) {
-    if(UI.DRAGGABLE_OBJECT_CLICKED){
+    if(windowUIClicked){
         return;
     }
 
@@ -369,6 +370,11 @@ function Tick() {
     uiColorSlotsWindow.TickChildren();
     uiDrawingToolsWindow.TickChildren();
 
+    windowUIClicked = (uiColorSlotsWindow.DRAGGABLE_OBJECT_CLICKED || uiDrawingToolsWindow.DRAGGABLE_OBJECT_CLICKED);
+    if (windowUIClicked) {
+        controls.enableRotate = false;
+    }
+
     if(settings.walk){
         timeCounter += 0.02;
         let rotationAmount = Math.cos(timeCounter) * 0.05;
@@ -377,7 +383,7 @@ function Tick() {
         ResetAnimation();
     }
 
-    if(clicked){
+    if(clicked && !windowUIClicked){
         raycaster.setFromCamera(mousePosition, camera );
         const intersects = raycaster.intersectObjects( scene.children );
         if(intersects.length > 0){
