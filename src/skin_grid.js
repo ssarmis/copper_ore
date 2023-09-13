@@ -1,7 +1,7 @@
 // Custom implementation of the GridHelper made for custom width and height/ divisions x and y
 import * as THREE from 'three';
 
-const DEFAULT_GRID_COLOR = 0x7e7e7e
+const DEFAULT_GRID_COLOR = 0xb4b4b4
 
 class SkinGrid extends THREE.LineSegments  {
     constructor(sw, sh, width, height, color1=DEFAULT_GRID_COLOR){
@@ -53,11 +53,10 @@ class SkinGrid extends THREE.LineSegments  {
 
 class SkinGridBox {
     
-    constructor(boxSize, width, height){
+    constructor(boxSize, width, height, epsilon){
         this.grids = [];
         this.visible = true;
         
-        let epsilon = 0.01;
         var gridHelper = new SkinGrid(boxSize.x, boxSize.y, width, height);
         gridHelper.rotation.x = THREE.MathUtils.degToRad(90);
         gridHelper.position.z += boxSize.z / 2 + epsilon;

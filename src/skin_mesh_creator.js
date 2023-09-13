@@ -1,8 +1,9 @@
 import * as THREE from 'three';
 
-function SkinMesh(){
-    const IMAGE_WIDTH = 64;
-    const IMAGE_HEIGHT = 64;
+function SkinMesh(width, height, overlayScalar){
+    const IMAGE_WIDTH = width;
+    const IMAGE_HEIGHT = height;
+    const OVERLAY_SCALAR = overlayScalar;
 
     this.overlayMeshes = {};
     this.normalMeshes  = {};
@@ -62,7 +63,6 @@ function SkinMesh(){
     const BOTTOM_FACE = 3;
     const TOP_FACE = 2;
     
-    
     function CreateHeadMesh(skin){
         var box = new THREE.BoxGeometry(1, 1, 1);
         var uvAttribute = box.attributes.uv;
@@ -83,7 +83,8 @@ function SkinMesh(){
     }
     
     function CreateHeadOverlayMesh(skin){
-        var box = new THREE.BoxGeometry(1.1, 1.1, 1.1);
+        var size = 1 + OVERLAY_SCALAR
+        var box = new THREE.BoxGeometry(size, size, size);
         var uvAttribute = box.attributes.uv;
     
         SetFaceUVs(FRONT_FACE,  SquareToUVs(4* 8 + 1 * 8, 1 * 8, 8, 8), uvAttribute);
@@ -122,7 +123,7 @@ function SkinMesh(){
     }
     
     function CreateTorsoOverlayMesh(skin){
-        var box = new THREE.BoxGeometry(1.1, 1.5 + 0.1, 0.5 + 0.1);
+        var box = new THREE.BoxGeometry(1 + OVERLAY_SCALAR, 1.5 + OVERLAY_SCALAR, 0.5 + OVERLAY_SCALAR);
         var uvAttribute = box.attributes.uv;
     
         SetFaceUVs(FRONT_FACE,  SquareToUVs(20, 16 + 20, 8, 12), uvAttribute);
@@ -161,7 +162,7 @@ function SkinMesh(){
     }
     
     function CreateRightLegOverlayMesh(skin){
-        var box = new THREE.BoxGeometry(0.5 + 0.1, 1.5 + 0.1, 0.5 + 0.1);
+        var box = new THREE.BoxGeometry(0.5 + OVERLAY_SCALAR, 1.5 + OVERLAY_SCALAR, 0.5 + OVERLAY_SCALAR);
         var uvAttribute = box.attributes.uv;
     
         SetFaceUVs(FRONT_FACE,  SquareToUVs(4, 16 + 20, 4, 12), uvAttribute);
@@ -200,7 +201,7 @@ function SkinMesh(){
     }
     
     function CreateLeftLegOverlayMesh(skin){
-        var box = new THREE.BoxGeometry(0.5 + 0.1, 1.5 + 0.1, 0.5 + 0.1);
+        var box = new THREE.BoxGeometry(0.5 + OVERLAY_SCALAR, 1.5 + OVERLAY_SCALAR, 0.5 + OVERLAY_SCALAR);
         var uvAttribute = box.attributes.uv;
     
         SetFaceUVs(FRONT_FACE,  SquareToUVs(4,  32 + 20, 4, 12), uvAttribute);
@@ -239,7 +240,7 @@ function SkinMesh(){
     }
     
     function CreateLeftHandOverlayMesh(skin){
-        var box = new THREE.BoxGeometry(0.5 + 0.1, 1.5 + 0.1, 0.5 + 0.1);
+        var box = new THREE.BoxGeometry(0.5 + OVERLAY_SCALAR, 1.5 + OVERLAY_SCALAR, 0.5 + OVERLAY_SCALAR);
         var uvAttribute = box.attributes.uv;
     
         SetFaceUVs(FRONT_FACE,  SquareToUVs(16 * 3 + 4,  32 + 20, 4, 12), uvAttribute);
@@ -278,7 +279,7 @@ function SkinMesh(){
     }
     
     function CreateRightHandOverlayMesh(skin){
-        var box = new THREE.BoxGeometry(0.5 + 0.1, 1.5 + 0.1, 0.5 + 0.1);
+        var box = new THREE.BoxGeometry(0.5 + OVERLAY_SCALAR, 1.5 + OVERLAY_SCALAR, 0.5 + OVERLAY_SCALAR);
         var uvAttribute = box.attributes.uv;
     
         SetFaceUVs(FRONT_FACE,  SquareToUVs(40 + 4, 16 + 20, 4, 12), uvAttribute);

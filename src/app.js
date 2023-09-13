@@ -2,74 +2,33 @@ import * as THREE from 'three';
 import * as dat from "dat.gui";
 import * as UI from 'copperore/ui';
 
-import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+import {CopperOre} from './copper_ore.js'
 import {CanvasIntermediateTexture} from 'copperore/canvas_intermediate_texture';
-import {SkinGridBox} from 'copperore/skin_grid';
-import {SkinMesh} from 'copperore/skin_mesh_creator';
 
 // todo fix bug with colorpicking on overlay meshes
 // todo fix mismatching back face for torso
+
+var copperOre;
+
 var uiColorSlotsWindow;
 var uiDrawingToolsWindow;
 var uiColorSlot0;
 
-var scene;
-var gridScene;
-var camera;
 var uiScene;
 var uiCamera;
-var controls;
 
-var renderer;
-var geometry;
-
-var currentIntersection;
 var currentSelectedColor;
 var currentBrushOpacity = 1;
 
-var skinMesh;
-var currentSkinTexture;
-var oldTexture;
-var dirtyTexture = false;
-
-// another, maybe cleaner approach
-// would be to use a queue and a pointer for the current texture
-// undo would decrease the pointer
-// redo would increase the pointer
-// will let this the way it is now but maybe someday(never) I will change it
-var historyStack = [];
-var revertStack = [];
-
-var now;
-var then;
-
 var loadingScreen;
 
-var disableTools = false;
 var windowUIClicked = false;
 
 const interval = 1000/100;
 
-const IMAGE_WIDTH = 64;
-const IMAGE_HEIGHT = 64;
-
-const skinOffsets = {
-    'headOverlay':  new THREE.Vector3(0, 1.25, 0),
-    'head':   new THREE.Vector3(0, 1.25, 0),
-    'rl':   new THREE.Vector3(-0.25, -1.5, 0),
-    'rlOverlay':   new THREE.Vector3(-0.25, -1.5, 0),
-    'll':   new THREE.Vector3(+0.25, -1.5, 0),
-    'llOverlay':   new THREE.Vector3(+0.25, -1.5, 0),
-    'lh':   new THREE.Vector3(+0.75, 0, 0),
-    'lhOverlay':   new THREE.Vector3(+0.75, 0, 0),
-    'rh':   new THREE.Vector3(-0.75, 0, 0),
-    'rhOverlay':   new THREE.Vector3(-0.75, 0, 0),
-};
-
 var hotkeys = {
 }
 
-const grids = {};
 var guiControls = {};
 
 var settings = {
@@ -97,68 +56,10 @@ const Tools = {
 };
 
 var currentTool = Tools.Brush;
-
-function Loop() {
-    now = Date.now();
-    var elapsed = now - then;
-    if(elapsed >= interval){
-        then = now;
-
-        Tick();
-        Render();
-    }
-    requestAnimationFrame(Loop);
-}
-
 var timeCounter = 0;
-const raycaster = new THREE.Raycaster();
-const mousePosition = new THREE.Vector2(1000000, 1000000);
-var clicked = false;
 
-function ChangeSkin(skinPath){
-    currentSkinTexture.dispose();
-    currentSkinTexture = new THREE.TextureLoader().load(skinPath);
-    currentSkinTexture.minFilter = THREE.NearestFilter;
-    currentSkinTexture.magFilter = THREE.NearestFilter;
-    skinMesh.UpdateTextureOnBodyParts(currentSkinTexture);
-}
+var currentColorSlot = undefined;
 
-function ChangeSkinFromTexture(texture){
-    currentSkinTexture.dispose();
-    currentSkinTexture = texture;
-    skinMesh.UpdateTextureOnBodyParts(currentSkinTexture);
-}
-
-function MouseClicked(event){
-    if(event.button == 0){
-        mousePosition.x = (event.clientX / window.innerWidth ) * 2 - 1;
-        mousePosition.y = -( event.clientY / window.innerHeight ) * 2 + 1;
-    } 
-}
-
-function SetGridVisibility(status) {
-    for (let gridPart of Object.values(grids)) {
-        gridPart.Visible(status);
-    }
-}
-
-var alreadyDowned = false;
-
-function MouseDown(event) {
-    if(windowUIClicked){
-        return;
-    }
-
-    if(event.button == 0){
-        mousePosition.x = (event.clientX / window.innerWidth ) * 2 - 1;
-        mousePosition.y = -( event.clientY / window.innerHeight ) * 2 + 1;
-        clicked = true;
-        if(!alreadyDowned){
-            alreadyDowned = true;
-            oldTexture = currentSkinTexture;
-        }
-    }
-}
 function KeyDown(event) {
     event = event || window.event;
     let keyCode = event.which || event.keyCode;
@@ -175,101 +76,11 @@ function KeyDown(event) {
     }
 
     if (keyCode == 90 && event.ctrlKey){
-        RevertToPreviousTexture();
+        copperOre.RevertToPreviousTexture();
         AnnounceText("Undo");
     } else if (keyCode == 89 && event.ctrlKey){
-        RevertPreviousRevert()
+        copperOre.RevertPreviousRevert()
         AnnounceText("Redo");
-    }
-}
-
-function MouseMove(event) {
-    if(windowUIClicked){
-        return;
-    }
-
-    if(event.button == 0){
-        if(clicked){
-            mousePosition.x = (event.clientX / window.innerWidth ) * 2 - 1;
-            mousePosition.y = -( event.clientY / window.innerHeight ) * 2 + 1;
-        }
-    }
-}
-
-function MouseUp(event) {
-    if(event.button == 0){
-        clicked = false;
-        AppendTextureToHistoryStack(oldTexture);
-        alreadyDowned = false;
-        dirtyTexture = false;
-        disableTools = false;
-        controls.enableRotate = true;
-    }
-}
-
-function AppendTextureToHistoryStack(texture){
-    if(dirtyTexture){ // only append previous texture if it was actually changed
-        if(historyStack.length > 512 - 1){
-            historyStack = historyStack.slice(1); // remove the oldest entry in order to make room for the new one
-        }
-        historyStack.push(texture);
-    }
-}
-
-function TopOfHistoryStackTexture(){
-    return historyStack.pop();
-}
-
-function TopOfRevertedHistoryStackTexture(){
-    return revertStack.pop();
-}
-
-function AppendTextureToRevertedStack(texture){
-    revertStack.push(texture);
-}
-
-function RevertPreviousRevert(){ // ctrl + y oposite of undo
-    let revertedTexture = TopOfRevertedHistoryStackTexture();
-    if(revertedTexture == undefined){
-        return;
-    }
-
-    dirtyTexture = true;
-    AppendTextureToHistoryStack(currentSkinTexture);
-
-    var canvasTexture = new CanvasIntermediateTexture(revertedTexture, IMAGE_WIDTH, IMAGE_HEIGHT) // all of them have the same texture mapped
-    currentSkinTexture = canvasTexture.FlushTexture();
-
-    for (let bodyPart of Object.values(skinMesh.normalMeshes)) {
-        bodyPart.material.map = currentSkinTexture;
-        bodyPart.material.map.needsUpdate = true;
-    }
-
-    for (let bodyPartOverlay of Object.values(skinMesh.overlayMeshes)) {
-        bodyPartOverlay.material.map = currentSkinTexture;
-        bodyPartOverlay.material.map.needsUpdate = true;
-    }
-}
-
-function RevertToPreviousTexture(){
-    let previousTexture = TopOfHistoryStackTexture();
-    if(previousTexture == undefined){
-        return;
-    }
-
-    AppendTextureToRevertedStack(currentSkinTexture);
-
-    var canvasTexture = new CanvasIntermediateTexture(previousTexture, IMAGE_WIDTH, IMAGE_HEIGHT) // all of them have the same texture mapped
-    currentSkinTexture = canvasTexture.FlushTexture();
-
-    for (let bodyPart of Object.values(skinMesh.normalMeshes)) {
-        bodyPart.material.map = currentSkinTexture;
-        bodyPart.material.map.needsUpdate = true;
-    }
-
-    for (let bodyPartOverlay of Object.values(skinMesh.overlayMeshes)) {
-        bodyPartOverlay.material.map = currentSkinTexture;
-        bodyPartOverlay.material.map.needsUpdate = true;
     }
 }
 
@@ -289,134 +100,50 @@ function GetCurrentSlotColor(){
     return currentColorSlot.material.color;
 }
 
-function ToolAction(part){
-    let p = new THREE.Vector2(part.uv.x * IMAGE_WIDTH, part.uv.y * IMAGE_HEIGHT);
-    p.x = Math.floor(p.x);
-    p.y = IMAGE_HEIGHT - Math.ceil(p.y);
-    
-    var canvasTexture = new CanvasIntermediateTexture(currentSkinTexture, IMAGE_WIDTH, IMAGE_HEIGHT);
-    let c = {};
-    Object.assign(c, GetCurrentSlotColor())
+function GetColorForPart(part) {
+    let color = {};
+    Object.assign(color, GetCurrentSlotColor())
 
     if (!part.object.userData.isOverlay) {
-        c.a = 1;
+        color.a = 1;
     }
 
-    switch(currentTool){
-        case Tools.Brush:{
-            let arr = [c.r * 255, c.g * 255, c.b * 255, c.a * 255];
-            ApplyBrush(canvasTexture, p, arr);
-            break;
-        }
-        case Tools.BucketFill:{            
-            FillColor(canvasTexture, p, c);
-            break;
-        }
-        case Tools.Eraser:{
-            ApplyBrush(canvasTexture, p, new THREE.Color(1, 1, 1, 0));
-            break;
-        }
-        case Tools.ColorPick:{
-            let selectedPixel = canvasTexture.PixelAt(p);
-            colors.brushColor = selectedPixel;
-            
-            UpdateCurrentSlotColor(colors.brushColor);
-            guiControls['brushColor'].updateDisplay(); // update the color display
-            break;
-        }
-    }
-    dirtyTexture = true;
-    currentSkinTexture = canvasTexture.FlushTexture();
-    part.object.material.map = currentSkinTexture;
-    part.object.material.needsUpdate = true;
+    return color;
 }
 
-function WalkAnimationTick(meshGroup, value, translation){
-    meshGroup.translateY(translation);
-    meshGroup.rotateX(value);
-    meshGroup.translateY(-translation);
+function UseBrush(part, canvasTexture, pixel) {
+    let color = GetColorForPart(part);
+    let arr = [color.r * 255, color.g * 255, color.b * 255, color.a * 255];
+    ApplyBrush(canvasTexture, pixel, arr);
 }
 
-function ResetAnimation(){
-    timeCounter = 0;
-    skinMesh.meshGroups['ll'].rotation.x = 0;
-    skinMesh.meshGroups['rl'].rotation.x = 0;
-    skinMesh.meshGroups['lh'].rotation.x = 0;
-    skinMesh.meshGroups['rh'].rotation.x = 0;
-
-    let tmp = skinMesh.originalPosition['ll'];
-    skinMesh.meshGroups['ll'].position.set(tmp.x, tmp.y, tmp.z);
-
-    tmp = skinMesh.originalPosition['rl'];
-    skinMesh.meshGroups['rl'].position.set(tmp.x, tmp.y, tmp.z);
-
-    tmp = skinMesh.originalPosition['lh'];
-    skinMesh.meshGroups['lh'].position.set(tmp.x, tmp.y, tmp.z);
-
-    tmp = skinMesh.originalPosition['rh'];
-    skinMesh.meshGroups['rh'].position.set(tmp.x, tmp.y, tmp.z);
+function UseBucket(part, canvasTexture, pixel) {
+    FillColor(canvasTexture, pixel, GetColorForPart(part));
 }
 
-function CompleteWalkAnimationTick(rotationAmount){
-    WalkAnimationTick(skinMesh.meshGroups['ll'], rotationAmount, -0.5);
-    WalkAnimationTick(skinMesh.meshGroups['rl'], -rotationAmount, -0.5);
-    WalkAnimationTick(skinMesh.meshGroups['lh'], -rotationAmount, 0.5);
-    WalkAnimationTick(skinMesh.meshGroups['rh'], rotationAmount, 0.5);
+function UseEraser(part, canvasTexture, pixel) {
+    ApplyBrush(canvasTexture, pixel, new THREE.Color(1, 1, 1, 0));
 }
 
-function Tick() {
-    controls.update();
+function UseColorPicker(part, canvasTexture, pixel) {
+    let selectedPixel = canvasTexture.PixelAt(pixel);
+    colors.brushColor = selectedPixel;
     
+    UpdateCurrentSlotColor(colors.brushColor);
+    guiControls['brushColor'].updateDisplay(); // update the color display
+}
+
+function Tick() {    
     uiColorSlotsWindow.TickChildren();
     uiDrawingToolsWindow.TickChildren();
 
     windowUIClicked = (uiColorSlotsWindow.DRAGGABLE_OBJECT_CLICKED || uiDrawingToolsWindow.DRAGGABLE_OBJECT_CLICKED);
     if (windowUIClicked) {
-        controls.enableRotate = false;
-    }
-
-    if(settings.walk){
-        timeCounter += 0.02;
-        let rotationAmount = Math.cos(timeCounter) * 0.05;
-        CompleteWalkAnimationTick(rotationAmount * 0.2);
-    } else {
-        ResetAnimation();
-    }
-
-    if(clicked && !windowUIClicked){
-        raycaster.setFromCamera(mousePosition, camera );
-        const intersects = raycaster.intersectObjects( scene.children );
-        if(intersects.length > 0){
-            currentIntersection = 0;
-            let bad = false;
-            while(!intersects[currentIntersection].object.visible){
-                ++currentIntersection;
-                if(currentIntersection >= intersects.length){
-                    bad = true;
-                    break;
-                }
-            }
-            if(!bad && !disableTools) {                
-                if(intersects[currentIntersection].object.userData.bodyModel == true){
-                    controls.enableRotate = false;
-                    ToolAction(intersects[currentIntersection]);
-                } else if (controls.enableRotate) {
-                    disableTools = true;
-                }
-            }
-        }
+        copperOre.controls.enableRotate = false;
     }
 }
 
-function Render() {
-    renderer.autoClear = true;
-    renderer.render( scene, camera );
-    
-    renderer.autoClear = false;
-    if (settings.grid) {
-        renderer.render( gridScene, camera );
-    }
-    
+function Render(renderer) {
     renderer.render( uiScene, uiCamera );
 }
 
@@ -436,47 +163,25 @@ function AnnounceText(text){
 }
 
 function SelectBrush(){
-    currentTool = Tools.Brush;
+    copperOre.SetCurrentTool("brush");
     AnnounceText("Brush");
 }
 
 function SelectEraser(){
-    currentTool = Tools.Eraser;
+    copperOre.SetCurrentTool("eraser");
     AnnounceText("Eraser");
 }
 
 function SelectBucketFill(){
-    currentTool = Tools.BucketFill;
+    copperOre.SetCurrentTool("bucket");
     AnnounceText("Bucket Fill");
 }
 
 function SelectColorPick(){
-    currentTool = Tools.ColorPick;
+    copperOre.SetCurrentTool("color_picker");
     AnnounceText("Color Pick");
 }
 
-function CreateAndAddToSceneGridForBodypart(bodypart, scene, width, height, boxSize, skinOffsets){
-    var gridBox = new SkinGridBox(boxSize, width, height);
-    for(let i = 0; i < gridBox.grids.length; ++i){
-        if(skinOffsets[bodypart] != undefined){
-            gridBox.grids[i].position.add(skinOffsets[bodypart]);
-        }
-        scene.add(gridBox.grids[i]);
-    }
-    return gridBox;
-}
-
-function TogglePart(part){
-    skinMesh.normalMeshes[part].visible = !skinMesh.normalMeshes[part].visible;
-    grids[part].Visible(skinMesh.normalMeshes[part].visible);
-}
-
-function ToggleOverlayPart(part){
-    skinMesh.overlayMeshes[part].visible = !skinMesh.overlayMeshes[part].visible;
-    grids[part].Visible(skinMesh.overlayMeshes[part].visible);
-}
-
-var currentColorSlot = undefined;
 function SelectColorSlot(button){
     currentColorSlot = button;
     currentSelectedColor = button.material.color;
@@ -501,8 +206,8 @@ function UpdateCurrentSlotColor(color){
 
 const GetTextureFromURL = (url) => new Promise((finalResolve, finalReject) => {
     var canvas = document.createElement("canvas");
-    canvas.width = IMAGE_WIDTH;
-    canvas.height = IMAGE_HEIGHT;
+    canvas.width = copperOre.IMAGE_WIDTH;
+    canvas.height = copperOre.IMAGE_HEIGHT;
     var context = canvas.getContext("2d");
 
     const loadImage = (url) => new Promise((resolve, reject) => {
@@ -544,13 +249,30 @@ function CreateSkybox(index){
 
     var backgroundBox = new THREE.BoxGeometry(256, 256, 256);
     return new THREE.Mesh(backgroundBox, backgroundMaterials);
-}    
+}
+
+function TogglePart(part) {
+    copperOre.TogglePart(part)
+}
+
+function ToggleOverlayPart(part) {
+    copperOre.ToggleOverlayPart(part)
+}
 
 function Initialize() {
-    window.addEventListener('click', MouseClicked);
-    window.addEventListener('mousedown', MouseDown);
-    window.addEventListener('mousemove', MouseMove);
-    window.addEventListener('mouseup', MouseUp);
+    copperOre = new CopperOre({
+        texture: 'assets/mncs-mascot.png',
+        bind: this,
+        render: Render,
+        tick: Tick,
+        tools: {
+            brush: UseBrush,
+            bucket: UseBucket,
+            eraser: UseEraser,
+            color_picker: UseColorPicker
+        }
+    });
+
     window.addEventListener('keydown', KeyDown);
 
     hotkeys[66] = SelectBrush; // b
@@ -558,65 +280,29 @@ function Initialize() {
     hotkeys[73] = SelectColorPick; // i
     hotkeys[71] = SelectBucketFill; // g
 
-    scene = new THREE.Scene();
-    gridScene = new THREE.Scene(); // separated for intersections
-
-    renderer = new THREE.WebGLRenderer();
-    renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap; // default THREE.PCFShadowMap
-    renderer.sortObjects = false;
-    renderer.setSize( window.innerWidth, window.innerHeight);
-    renderer.setClearColor(new THREE.Color(0.1, 0.1, 0.1));
-    renderer.outputColorSpace = THREE.NoColorSpace;
-
-    document.body.appendChild( renderer.domElement );
-    ///
-    camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.01, 1000 );
-    controls = new OrbitControls(camera, renderer.domElement);
-    controls.mouseButtons = { LEFT: THREE.MOUSE.ROTATE, MIDDLE: THREE.MOUSE.PAN, RIGHT: THREE.MOUSE.ROTATE};
-    // window.addEventListener( 'resize', onWindowResize );
-    ///
-    currentSkinTexture = new THREE.TextureLoader().load('assets/mncs-mascot.png'); 
-    currentSkinTexture.minFilter = THREE.NearestFilter;
-    currentSkinTexture.magFilter = THREE.NearestFilter;
-
-    // initialize position offsets somewhere
-    skinMesh = new SkinMesh();
-    skinMesh.InitializeFullMesh(currentSkinTexture);
-    skinMesh.ApplyOffsetsToBodyParts(skinOffsets);
-    skinMesh.AddToScene(scene);
-
-    // skinMesh.normalMeshes['head'].visible = false;
-
-    camera.position.z = 5;
-    then = Date.now();
     currentSelectedColor = colors.brushColor;
     
     let fields = {
         'username': ""
     }
 
+    let width = copperOre.IMAGE_WIDTH;
+    let height = copperOre.IMAGE_HEIGHT;
+
     let buttons = {
         'clearSkinFullTransparent': () => {
-            let canvasTexture = new CanvasIntermediateTexture(undefined, IMAGE_WIDTH, IMAGE_HEIGHT, IMAGE_WIDTH, IMAGE_HEIGHT);
-            canvasTexture.ClearPixelsAlpha(IMAGE_WIDTH, IMAGE_HEIGHT);
-          
-            dirtyTexture = true;
-            AppendTextureToHistoryStack(currentSkinTexture);
-
-            ChangeSkinFromTexture(canvasTexture.FlushTexture());
+            let canvasTexture = new CanvasIntermediateTexture(undefined, width, height, width, height);
+            canvasTexture.ClearPixelsAlpha(width, height);
+            copperOre.SetNewTexture(canvasTexture);
         },
         'clearSkin': () => {
-            let canvasTexture = new CanvasIntermediateTexture(undefined, IMAGE_WIDTH, IMAGE_HEIGHT, IMAGE_WIDTH, IMAGE_HEIGHT);
-            canvasTexture.ClearPixels(IMAGE_WIDTH, IMAGE_HEIGHT, new THREE.Color(colors.clearColor[0] / 255, colors.clearColor[1] / 255, colors.clearColor[2] / 255));
-            
-            dirtyTexture = true;
-            AppendTextureToHistoryStack(currentSkinTexture);
-
-            ChangeSkinFromTexture(canvasTexture.FlushTexture());
+            let canvasTexture = new CanvasIntermediateTexture(undefined, width, height, width, height);
+            canvasTexture.ClearPixels(width, height, new THREE.Color(colors.clearColor[0] / 255, colors.clearColor[1] / 255, colors.clearColor[2] / 255));
+            copperOre.SetNewTexture(canvasTexture);
         },
         'save': () => {
             let canvas = document.createElement('canvas');
+            let currentSkinTexture = copperOre.currentSkinTexture;
             canvas.width = currentSkinTexture.image.width;
             canvas.height = currentSkinTexture.image.height;
             let context = canvas.getContext('2d');
@@ -645,12 +331,12 @@ function Initialize() {
                 .then(json => {
                     let textureURL = json['textures']['skin']['url'];
                     GetTextureFromURL(textureURL)
-                        .then(texture => ChangeSkinFromTexture(texture));
+                        .then(texture => copperOre.ChangeSkinFromTexture(texture));
                 });
             imageLoaded = true;
         },
         'resetView': ()=>{
-            controls.reset();
+            copperOre.controls.reset();
         }
     };
 
@@ -660,7 +346,7 @@ function Initialize() {
         var fileReader = new FileReader();
         fileReader.onload = () => {
             GetTextureFromURL(fileReader.result)
-            .then(texture => ChangeSkinFromTexture(texture));
+            .then(texture => copperOre.ChangeSkinFromTexture(texture));
         };
         fileReader.readAsDataURL(file);
     };
@@ -669,9 +355,7 @@ function Initialize() {
     const editFolder = gui.addFolder("Edit");
     editFolder.open();
     guiControls['brushSize'] = editFolder.add(brushSize, 'size', 0, 8, 1).name("Brush Size");
-    guiControls['normalGridToggle'] = editFolder.add(settings, 'grid', false).name("Grid").onChange(() => {
-        // SetGridVisibility(settings.grid)
-    });
+    guiControls['normalGridToggle'] = editFolder.add(copperOre.settings, 'grid', false).name("Grid");
     guiControls['brushColor'] = editFolder.addColor(colors, 'brushColor').name("Brush Color").onChange(() => {
         UpdateCurrentSlotColor(colors.brushColor);
         currentColorSlot.material.color.a = currentBrushOpacity;
@@ -687,10 +371,6 @@ function Initialize() {
     });
     guiControls['clearSkinFullTransparent'] = editFolder.add(buttons, 'clearSkinFullTransparent').name("Clear Skin Full Transparant");
     guiControls['resetView'] = editFolder.add(buttons, 'resetView').name("Reset View");
-     
-    const animationFolder = gui.addFolder("Animation");
-    animationFolder.open();
-    guiControls['walkToggle'] = animationFolder.add(settings, 'walk', false).name("Walk");
 
     const fileFolder = gui.addFolder("File");
     fileFolder.open();
@@ -699,24 +379,6 @@ function Initialize() {
 
     guiControls['usernameField'] = fileFolder.add(fields, 'username').name("Username");
     guiControls['useUsernameSkin'] = fileFolder.add(buttons, 'useUsernameSkin').name("Use skin from username");
-
-    grids['head'] = CreateAndAddToSceneGridForBodypart('head', gridScene, 8, 8, new THREE.Vector3(1.0, 1.0, 1.0), skinOffsets);
-    grids['torso'] = CreateAndAddToSceneGridForBodypart('torso', gridScene, 8, 12, new THREE.Vector3(1.0, 1.5, 0.5), skinOffsets);
-    grids['rh'] = CreateAndAddToSceneGridForBodypart('rh', gridScene, 4, 12, new THREE.Vector3(0.5, 1.5, 0.5), skinOffsets);
-    grids['lh'] = CreateAndAddToSceneGridForBodypart('lh', gridScene, 4, 12, new THREE.Vector3(0.5, 1.5, 0.5), skinOffsets);
-    grids['rl'] = CreateAndAddToSceneGridForBodypart('rl', gridScene, 4, 12, new THREE.Vector3(0.5, 1.5, 0.5), skinOffsets);
-    grids['ll'] = CreateAndAddToSceneGridForBodypart('ll', gridScene, 4, 12, new THREE.Vector3(0.5, 1.5, 0.5), skinOffsets);
-
-
-    const overlayScalar = 0.085;
-    grids['headOverlay'] = CreateAndAddToSceneGridForBodypart('headOverlay', gridScene, 8, 8, new THREE.Vector3(1.0, 1.0, 1.0).addScalar(overlayScalar), skinOffsets);
-    grids['torsoOverlay'] = CreateAndAddToSceneGridForBodypart('torsoOverlay', gridScene, 8, 12, new THREE.Vector3(1.0, 1.5, 0.5).addScalar(overlayScalar), skinOffsets);
-    grids['rhOverlay'] = CreateAndAddToSceneGridForBodypart('rhOverlay', gridScene, 4, 12, new THREE.Vector3(0.5, 1.5, 0.5).addScalar(overlayScalar), skinOffsets);
-    grids['lhOverlay'] = CreateAndAddToSceneGridForBodypart('lhOverlay', gridScene, 4, 12, new THREE.Vector3(0.5, 1.5, 0.5).addScalar(overlayScalar), skinOffsets);
-    grids['rlOverlay'] = CreateAndAddToSceneGridForBodypart('rlOverlay', gridScene, 4, 12, new THREE.Vector3(0.5, 1.5, 0.5).addScalar(overlayScalar), skinOffsets);
-    grids['llOverlay'] = CreateAndAddToSceneGridForBodypart('llOverlay', gridScene, 4, 12, new THREE.Vector3(0.5, 1.5, 0.5).addScalar(overlayScalar), skinOffsets);
-
-    SetGridVisibility(true)
 
     uiCamera = new THREE.OrthographicCamera(0, window.innerWidth, 0, window.innerHeight, 1, 1000);
     uiCamera.position.z = 1;
@@ -768,13 +430,10 @@ function Initialize() {
         CreateSkybox(1)
     ];
 
-    scene.add(skyboxes[0]);
+    copperOre.AddToScene(skyboxes[0]);
 
     loadingScreen = document.getElementsByClassName('loading')[0];
     HideLoadingScreen();
-    controls.saveState();
-
-    Loop();
 }
 
 export {Initialize, TogglePart, ToggleOverlayPart};
