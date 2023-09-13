@@ -261,7 +261,7 @@ function ToggleOverlayPart(part) {
 
 function Initialize() {
     copperOre = new CopperOre({
-        texture: 'assets/mncs-mascot.png',
+        texture: 'assets/gigachad.png',
         bind: this,
         render: Render,
         tick: Tick,
