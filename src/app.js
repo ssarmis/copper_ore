@@ -141,6 +141,14 @@ function Tick() {
     if (windowUIClicked) {
         copperOre.controls.enableRotate = false;
     }
+
+    if(settings.walk){
+        timeCounter += 0.02;
+        let rotationAmount = Math.cos(timeCounter) * 0.05;
+        CompleteWalkAnimationTick(rotationAmount * 0.2);
+    } else {
+        ResetAnimation();
+    }
 }
 
 function Render(renderer) {
@@ -259,6 +267,41 @@ function ToggleOverlayPart(part) {
     copperOre.ToggleOverlayPart(part)
 }
 
+function WalkAnimationTick(meshGroup, value, translation){
+    meshGroup.translateY(translation);
+    meshGroup.rotateX(value);
+    meshGroup.translateY(-translation);
+}
+
+function ResetAnimation(){
+    timeCounter = 0;
+    let skinMesh = copperOre.skinMesh;
+    skinMesh.meshGroups['ll'].rotation.x = 0;
+    skinMesh.meshGroups['rl'].rotation.x = 0;
+    skinMesh.meshGroups['lh'].rotation.x = 0;
+    skinMesh.meshGroups['rh'].rotation.x = 0;
+
+    let tmp = skinMesh.originalPosition['ll'];
+    skinMesh.meshGroups['ll'].position.set(tmp.x, tmp.y, tmp.z);
+
+    tmp = skinMesh.originalPosition['rl'];
+    skinMesh.meshGroups['rl'].position.set(tmp.x, tmp.y, tmp.z);
+
+    tmp = skinMesh.originalPosition['lh'];
+    skinMesh.meshGroups['lh'].position.set(tmp.x, tmp.y, tmp.z);
+
+    tmp = skinMesh.originalPosition['rh'];
+    skinMesh.meshGroups['rh'].position.set(tmp.x, tmp.y, tmp.z);
+}
+
+function CompleteWalkAnimationTick(rotationAmount){
+    let skinMesh = copperOre.skinMesh;
+    WalkAnimationTick(skinMesh.meshGroups['ll'], rotationAmount, -0.5);
+    WalkAnimationTick(skinMesh.meshGroups['rl'], -rotationAmount, -0.5);
+    WalkAnimationTick(skinMesh.meshGroups['lh'], -rotationAmount, 0.5);
+    WalkAnimationTick(skinMesh.meshGroups['rh'], rotationAmount, 0.5);
+}
+
 function Initialize() {
     copperOre = new CopperOre({
         texture: 'assets/gigachad.png',
@@ -371,6 +414,10 @@ function Initialize() {
     });
     guiControls['clearSkinFullTransparent'] = editFolder.add(buttons, 'clearSkinFullTransparent').name("Clear Skin Full Transparant");
     guiControls['resetView'] = editFolder.add(buttons, 'resetView').name("Reset View");
+
+    const animationFolder = gui.addFolder("Animation");
+    animationFolder.open();
+    guiControls['walkToggle'] = animationFolder.add(settings, 'walk', false).name("Walk");
 
     const fileFolder = gui.addFolder("File");
     fileFolder.open();
