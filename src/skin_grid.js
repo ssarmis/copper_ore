@@ -1,6 +1,10 @@
 // Custom implementation of the GridHelper made for custom width and height/ divisions x and y
+import * as THREE from 'three';
+
+const DEFAULT_GRID_COLOR = 0xb4b4b4
+
 class SkinGrid extends THREE.LineSegments  {
-    constructor(sw, sh, width, height, color1=0x444444){
+    constructor(sw, sh, width, height, color1=DEFAULT_GRID_COLOR){
         color1 = new THREE.Color( color1 );
         
         const halfSizex = sw / 2;
@@ -49,10 +53,10 @@ class SkinGrid extends THREE.LineSegments  {
 
 class SkinGridBox {
     
-    constructor(boxSize, width, height){
+    constructor(boxSize, width, height, epsilon){
         this.grids = [];
+        this.visible = true;
         
-        let epsilon = 0.01;
         var gridHelper = new SkinGrid(boxSize.x, boxSize.y, width, height);
         gridHelper.rotation.x = THREE.MathUtils.degToRad(90);
         gridHelper.position.z += boxSize.z / 2 + epsilon;
@@ -75,19 +79,25 @@ class SkinGridBox {
         gridHelper.position.x += boxSize.x / 2 + epsilon;
         this.grids.push(gridHelper);
         // bottom
-        gridHelper = new SkinGrid(boxSize.x, boxSize.z, width, height);
+        gridHelper = new SkinGrid(boxSize.x, boxSize.z, width, width);
         gridHelper.position.y -= boxSize.y / 2 + epsilon;
         this.grids.push(gridHelper);
         // top
-        gridHelper = new SkinGrid(boxSize.x, boxSize.z, width, height);
+        gridHelper = new SkinGrid(boxSize.x, boxSize.z, width, width);
         gridHelper.position.y += boxSize.y / 2 + epsilon;
         this.grids.push(gridHelper);
     }
 
     Visible = (status) => {
+        this.visible = status;
         for(let i = 0; i < this.grids.length; ++i){
             this.grids[i].visible = status;
         }
+    }
+
+    toggleVisible = () => {
+        this.visible = !this.visible;
+        this.Visible(this.visible);
     }
 
     dispose(){
@@ -96,3 +106,5 @@ class SkinGridBox {
         }
     }
 }
+
+export {SkinGrid, SkinGridBox};

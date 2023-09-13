@@ -1,6 +1,9 @@
-function SkinMesh(){
-    const IMAGE_WIDTH = 64;
-    const IMAGE_HEIGHT = 64;
+import * as THREE from 'three';
+
+function SkinMesh(width, height, overlayScalar){
+    const IMAGE_WIDTH = width;
+    const IMAGE_HEIGHT = height;
+    const OVERLAY_SCALAR = overlayScalar;
 
     this.overlayMeshes = {};
     this.normalMeshes  = {};
@@ -60,7 +63,6 @@ function SkinMesh(){
     const BOTTOM_FACE = 3;
     const TOP_FACE = 2;
     
-    
     function CreateHeadMesh(skin){
         var box = new THREE.BoxGeometry(1, 1, 1);
         var uvAttribute = box.attributes.uv;
@@ -81,7 +83,8 @@ function SkinMesh(){
     }
     
     function CreateHeadOverlayMesh(skin){
-        var box = new THREE.BoxGeometry(1.1, 1.1, 1.1);
+        var size = 1 + OVERLAY_SCALAR
+        var box = new THREE.BoxGeometry(size, size, size);
         var uvAttribute = box.attributes.uv;
     
         SetFaceUVs(FRONT_FACE,  SquareToUVs(4* 8 + 1 * 8, 1 * 8, 8, 8), uvAttribute);
@@ -95,7 +98,8 @@ function SkinMesh(){
     
         uvAttribute.needsUpdate = true;
     
-        const material = new THREE.MeshBasicMaterial({map:skin, alphaTest:1, side:THREE.DoubleSide});
+        const material = new THREE.MeshBasicMaterial({map:skin, side:THREE.DoubleSide});
+        material.transparent = true;
         return new THREE.Mesh( box, material );
     }
     
@@ -119,7 +123,7 @@ function SkinMesh(){
     }
     
     function CreateTorsoOverlayMesh(skin){
-        var box = new THREE.BoxGeometry(1.1, 1.5 + 0.1, 0.5 + 0.1);
+        var box = new THREE.BoxGeometry(1 + OVERLAY_SCALAR, 1.5 + OVERLAY_SCALAR, 0.5 + OVERLAY_SCALAR);
         var uvAttribute = box.attributes.uv;
     
         SetFaceUVs(FRONT_FACE,  SquareToUVs(20, 16 + 20, 8, 12), uvAttribute);
@@ -133,7 +137,8 @@ function SkinMesh(){
     
         uvAttribute.needsUpdate = true;
     
-        const material = new THREE.MeshBasicMaterial({map:skin, alphaTest:1, side:THREE.DoubleSide});
+        const material = new THREE.MeshBasicMaterial({map:skin, side:THREE.DoubleSide});
+        material.transparent = true;
         return new THREE.Mesh( box, material );
     }
     
@@ -157,7 +162,7 @@ function SkinMesh(){
     }
     
     function CreateRightLegOverlayMesh(skin){
-        var box = new THREE.BoxGeometry(0.5 + 0.1, 1.5 + 0.1, 0.5 + 0.1);
+        var box = new THREE.BoxGeometry(0.5 + OVERLAY_SCALAR, 1.5 + OVERLAY_SCALAR, 0.5 + OVERLAY_SCALAR);
         var uvAttribute = box.attributes.uv;
     
         SetFaceUVs(FRONT_FACE,  SquareToUVs(4, 16 + 20, 4, 12), uvAttribute);
@@ -171,7 +176,8 @@ function SkinMesh(){
     
         uvAttribute.needsUpdate = true;
     
-        const material = new THREE.MeshBasicMaterial({map:skin, alphaTest:1, side:THREE.DoubleSide});
+        const material = new THREE.MeshBasicMaterial({map:skin, side:THREE.DoubleSide});
+        material.transparent = true;
         return new THREE.Mesh( box, material );
     }
     
@@ -195,7 +201,7 @@ function SkinMesh(){
     }
     
     function CreateLeftLegOverlayMesh(skin){
-        var box = new THREE.BoxGeometry(0.5 + 0.1, 1.5 + 0.1, 0.5 + 0.1);
+        var box = new THREE.BoxGeometry(0.5 + OVERLAY_SCALAR, 1.5 + OVERLAY_SCALAR, 0.5 + OVERLAY_SCALAR);
         var uvAttribute = box.attributes.uv;
     
         SetFaceUVs(FRONT_FACE,  SquareToUVs(4,  32 + 20, 4, 12), uvAttribute);
@@ -208,8 +214,9 @@ function SkinMesh(){
         SetFaceUVs(BOTTOM_FACE, SquareToUVs(8, 32 + 16, 4, 4), uvAttribute);
     
         uvAttribute.needsUpdate = true;
-    
-        const material = new THREE.MeshBasicMaterial({map:skin, alphaTest:1, side:THREE.DoubleSide});
+
+        const material = new THREE.MeshBasicMaterial({map:skin, side:THREE.DoubleSide});
+        material.transparent = true;
         return new THREE.Mesh( box, material );
     }
     
@@ -233,7 +240,7 @@ function SkinMesh(){
     }
     
     function CreateLeftHandOverlayMesh(skin){
-        var box = new THREE.BoxGeometry(0.5 + 0.1, 1.5 + 0.1, 0.5 + 0.1);
+        var box = new THREE.BoxGeometry(0.5 + OVERLAY_SCALAR, 1.5 + OVERLAY_SCALAR, 0.5 + OVERLAY_SCALAR);
         var uvAttribute = box.attributes.uv;
     
         SetFaceUVs(FRONT_FACE,  SquareToUVs(16 * 3 + 4,  32 + 20, 4, 12), uvAttribute);
@@ -247,7 +254,8 @@ function SkinMesh(){
     
         uvAttribute.needsUpdate = true;
     
-        const material = new THREE.MeshBasicMaterial({map:skin, alphaTest:1, side:THREE.DoubleSide});
+        const material = new THREE.MeshBasicMaterial({map:skin, side:THREE.DoubleSide});
+        material.transparent = true;
         return new THREE.Mesh( box, material );
     }
     
@@ -271,7 +279,7 @@ function SkinMesh(){
     }
     
     function CreateRightHandOverlayMesh(skin){
-        var box = new THREE.BoxGeometry(0.5 + 0.1, 1.5 + 0.1, 0.5 + 0.1);
+        var box = new THREE.BoxGeometry(0.5 + OVERLAY_SCALAR, 1.5 + OVERLAY_SCALAR, 0.5 + OVERLAY_SCALAR);
         var uvAttribute = box.attributes.uv;
     
         SetFaceUVs(FRONT_FACE,  SquareToUVs(40 + 4, 16 + 20, 4, 12), uvAttribute);
@@ -285,7 +293,8 @@ function SkinMesh(){
     
         uvAttribute.needsUpdate = true;
     
-        const material = new THREE.MeshBasicMaterial({map:skin, alphaTest:1, side:THREE.DoubleSide});
+        const material = new THREE.MeshBasicMaterial({map:skin, side:THREE.DoubleSide});
+        material.transparent = true;
         return new THREE.Mesh( box, material );
     }
 
@@ -295,39 +304,51 @@ function SkinMesh(){
     this.InitializeFullMesh = (texture) => {
         this.headOverlay = CreateHeadOverlayMesh(texture);
         this.headOverlay.userData.bodyModel = true;
+        this.headOverlay.userData.isOverlay = true;
     
         this.head = CreateHeadMesh(texture);
         this.head.userData.bodyModel = true;
+        this.head.userData.isOverlay = false;
     
         this.torso = CreateTorsoMesh(texture);
         this.torso.userData.bodyModel = true;
+        this.torso.userData.isOverlay = false;
     
         this.torsoOverlay = CreateTorsoOverlayMesh(texture);
         this.torsoOverlay.userData.bodyModel = true;
+        this.torsoOverlay.userData.isOverlay = true;
     
         this.rl = CreateRightLegMesh(texture);
         this.rl.userData.bodyModel = true;
+        this.rl.userData.isOverlay = false;
     
         this.rlOverlay = CreateRightLegOverlayMesh(texture);
         this.rlOverlay.userData.bodyModel = true;
+        this.rlOverlay.userData.isOverlay = true;
     
         this.ll = CreateLeftLegMesh(texture);
         this.ll.userData.bodyModel = true;
+        this.ll.userData.isOverlay = false;
     
         this.llOverlay = CreateLeftLegOverlayMesh(texture);
         this.llOverlay.userData.bodyModel = true;
+        this.llOverlay.userData.isOverlay = true;
     
         this.lh = CreateLeftHandMesh(texture);
         this.lh.userData.bodyModel = true;
+        this.lh.userData.isOverlay = false;
     
         this.lhOverlay = CreateLeftHandOverlayMesh(texture);
         this.lhOverlay.userData.bodyModel = true;
+        this.lhOverlay.userData.isOverlay = true;
     
         this.rh = CreateRightHandMesh(texture);
         this.rh.userData.bodyModel = true;
-    
+        this.rh.userData.isOverlay = false;
+
         this.rhOverlay = CreateRightHandOverlayMesh(texture);
         this.rhOverlay.userData.bodyModel = true;
+        this.rhOverlay.userData.isOverlay = true;
 
         this.overlayMeshes['headOverlay'] = this.headOverlay;
         this.overlayMeshes['torsoOverlay'] = this.torsoOverlay;
@@ -455,3 +476,5 @@ function SkinMesh(){
         delete this.llOverlay;
     }
 }
+
+export {SkinMesh};
