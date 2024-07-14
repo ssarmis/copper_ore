@@ -7,3 +7,5 @@ Brush -> 'B'
 Eraser -> 'E'
 Bucket Fill -> 'G'
 Color Picker -> 'I'
+
+Created by Streanga Sarmis-Stefan
