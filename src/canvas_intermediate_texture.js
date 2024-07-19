@@ -1,6 +1,9 @@
-class CanvasIntermidiateTexture {
-    constructor(texture, width=0, height=0){
+import * as THREE from 'three';
+class CanvasIntermediateTexture {
+    constructor(texture, imgWidth, imgHeight, width=0, height=0){
         // w and h are only read if the texture is undefined, meaning this canvas will be empty
+        this.imgWidth = imgWidth;
+        this.imgHeight = imgHeight;
         this.canvas = document.createElement('canvas');
         this.canvas = document.createElement('canvas');
         this.context = this.canvas.getContext('2d');
@@ -36,9 +39,9 @@ class CanvasIntermidiateTexture {
     }
 
     PixelAt = (point) => {
-        return [this.data[(point.x * 4 + 0) + point.y * IMAGE_WIDTH * 4],
-                this.data[(point.x * 4 + 1) + point.y * IMAGE_WIDTH * 4],
-                this.data[(point.x * 4 + 2) + point.y * IMAGE_WIDTH * 4]]
+        return [this.data[(point.x * 4 + 0) + point.y * this.imgWidth * 4],
+                this.data[(point.x * 4 + 1) + point.y * this.imgWidth * 4],
+                this.data[(point.x * 4 + 2) + point.y * this.imgWidth * 4]]
     }
 
     GetColorAt = (point) => {
@@ -47,23 +50,23 @@ class CanvasIntermidiateTexture {
     }
     
     ChangePixelAt = (point, color) => {
-        this.data[(point.x * 4 + 0) + point.y * IMAGE_WIDTH * 4] = color.r * 255;
-        this.data[(point.x * 4 + 1) + point.y * IMAGE_WIDTH * 4] = color.g * 255;
-        this.data[(point.x * 4 + 2) + point.y * IMAGE_WIDTH * 4] = color.b * 255;
-        this.data[(point.x * 4 + 3) + point.y * IMAGE_WIDTH * 4] = color.a * 255;
+        this.data[(point.x * 4 + 0) + point.y * this.imgWidth * 4] = color.r * 255;
+        this.data[(point.x * 4 + 1) + point.y * this.imgWidth * 4] = color.g * 255;
+        this.data[(point.x * 4 + 2) + point.y * this.imgWidth * 4] = color.b * 255;
+        this.data[(point.x * 4 + 3) + point.y * this.imgWidth * 4] = color.a * 255;
     }
 
     ChangePixelAtArray = (point, colorArray) => {
-        this.data[(point.x * 4 + 0) + point.y * IMAGE_WIDTH * 4] = colorArray[0];
-        this.data[(point.x * 4 + 1) + point.y * IMAGE_WIDTH * 4] = colorArray[1];
-        this.data[(point.x * 4 + 2) + point.y * IMAGE_WIDTH * 4] = colorArray[2];
-        this.data[(point.x * 4 + 3) + point.y * IMAGE_WIDTH * 4] = colorArray[3];
+        this.data[(point.x * 4 + 0) + point.y * this.imgWidth * 4] = colorArray[0];
+        this.data[(point.x * 4 + 1) + point.y * this.imgWidth * 4] = colorArray[1];
+        this.data[(point.x * 4 + 2) + point.y * this.imgWidth * 4] = colorArray[2];
+        this.data[(point.x * 4 + 3) + point.y * this.imgWidth * 4] = colorArray[3];
     }
     
     // TODO add user data to the uvs on faces so that we can't fill things on other parts
     Fill = (point, originalPixel, newColor) => {
         let thisPixel = this.PixelAt(point);
-        if(point.x < 0 || point.x > IMAGE_WIDTH - 1 || point.y < 0 || point.y > IMAGE_HEIGHT - 1){
+        if(point.x < 0 || point.x > this.imgWidth - 1 || point.y < 0 || point.y > this.imgHeight - 1){
             return;
         }
         if( this.visitedTable[point.x + ":" + point.y] != undefined ||
@@ -91,3 +94,5 @@ class CanvasIntermidiateTexture {
         return newTexture.clone();
     }
 }
+
+export {CanvasIntermediateTexture};

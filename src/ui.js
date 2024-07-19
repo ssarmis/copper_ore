@@ -1,4 +1,4 @@
-var DRAGGABLE_OBJECT_CLICKED = false;
+import * as THREE from 'three';
 class AABB {
     Intersects = (point) => {
         let x0 = this.position.x - (this.size.x / 2);
@@ -15,7 +15,7 @@ class AABB {
     }
 }
 
-class UIEmptyButton {
+class EmptyButton {
     MouseClicked = (event) => {
         var mousePoint = new THREE.Vector2(event.clientX, event.clientY);
         if(this.aabb.Intersects(mousePoint)){
@@ -55,7 +55,7 @@ class UIEmptyButton {
     }
 }
 
-class UIIconButton {
+class IconButton {
     MouseClicked = (event) => {
         var mousePoint = new THREE.Vector2(event.clientX, event.clientY);
         if(this.aabb.Intersects(mousePoint)){
@@ -100,12 +100,13 @@ class UIIconButton {
 }
 
 
-class UIWindow{
+class Window{
+    DRAGGABLE_OBJECT_CLICKED = false;
     MouseDown = (event) => {
         if(!this.alreadyDown){
             this.oldMousePosition = new THREE.Vector2(event.clientX, event.clientY);
             if(this.dragBarAABB.Intersects(this.oldMousePosition)){
-                DRAGGABLE_OBJECT_CLICKED = true;
+                this.DRAGGABLE_OBJECT_CLICKED = true;
                 this.alreadyDown = true;
                 this.anchorPosition = this.position;
             }
@@ -127,7 +128,7 @@ class UIWindow{
     MouseUp = (event) => {
         this.alreadyDown = false;
         this.startedDrag = false;
-        DRAGGABLE_OBJECT_CLICKED = false;
+        this.DRAGGABLE_OBJECT_CLICKED = false;
     }
 
     constructor(position, size, title=""){
@@ -185,3 +186,4 @@ class UIWindow{
     }
 }
 
+export {EmptyButton, IconButton, Window};
